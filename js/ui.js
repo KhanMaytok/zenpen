@@ -285,11 +285,18 @@ ZenPen.ui = (function() {
 
 	function formatText( type, header, body ) {
 		
+		String.prototype.replaceAll = function(search, replacement) {
+                	var target = this;
+    			return target.replace(new RegExp(search, 'g'), replacement);
+		};
+		
 		var text;
 		switch( type ) {
 
 			case 'html':
 				header = "<h1>" + header + "</h1>";
+				body = "<p>" + body;
+				body.replaceAll('<br\/?>[\s]*?\n?[\s]*', '</p>\n</p>')
 				text = header + body;
 				text = text.replace(/\t/g, '');
 			break;
