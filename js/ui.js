@@ -296,6 +296,7 @@ ZenPen.ui = (function() {
 			case 'html':
 				header = "<h1>" + header + "</h1>";
 				body.replaceAll('<br\/?>[\s]*?\n?[\s]*', '</p>\n</p>')
+				body.replaceAll('<br?>[\s]*?\n?[\s]*', '</p>\n</p>')
 				text = header + body;
 				text = text.replace(/\t/g, '');
 			break;
