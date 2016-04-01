@@ -23,6 +23,8 @@
 		<script src="js/editor.js"></script>
 		<script src="js/ui.js"></script>
 
+		<script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
+
     </head>
 
 	<body class="yin">
@@ -88,6 +90,12 @@
 					<button class="save useicons" title="Save Text">
 						&#xe003;
 					</button>
+					<button class="logout useicons" title="Login" onclick="login()">
+						&#xe001;
+					</button>
+					<button class="logout useicons" title="Logout" onclick="logout()">
+						&#xe001;
+					</button>
 				</div>
 
 				<div class="bottom">
@@ -108,7 +116,7 @@
 				Esto es ZenPen
 			</header>
 
-			<article contenteditable="true" class="content">
+			<article contenteditable="true" class="content" id="content">
 
 				<p>
 					Una zona de escritura minimalista, donde puedes bloquear todas las distracciones y enfocarte en lo más importante: ¡La escritura!
@@ -137,10 +145,76 @@
 		</section>
 
 		<!-- JS -->
+		<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js'></script>
 		<script type="text/javascript">
-	        // Initiate ZenPen
+	         // Initiate ZenPen
 	        ZenPen.editor.init();
-	    	ZenPen.ui.init();
+	        ZenPen.ui.init();
+
+	         //Declare variables
+	        var authData;
+
+	         // Create a callback which logs the current auth state
+	        function authDataCallback(authData) {
+	            if (authData) {
+	                console.log("User " + authData.uid + " is logged in with " + authData.provider);
+	            } else {
+	                console.log("User is logged out");
+	            }
+	        }
+	         // Register the callback to be fired every time auth state changes
+	        var ref = new Firebase("https://radiant-fire-8840.firebaseio.com/zenpen");
+	        ref.onAuth(authDataCallback);
+
+	        function logout() {
+	            ref.unauth();
+	            localStorage.clear();
+	            location.reload();
+	        }
+
+	        function login() {
+	            ref.authWithOAuthPopup("twitter", function(error, authData) {
+	                if (error) {
+	                    console.log("Login Failed!", error);
+	                } else {
+	                    console.log("Authenticated successfully with payload:", authData);
+	                    //Check if is a new user
+	                    authData = authData;
+	                    checkIfUserExists(authData);
+	                }
+	            });
+	        }
+
+	        function getName(authData) {
+	            switch (authData.provider) {
+	                case 'password':
+	                    return authData.password.email.replace(/@.*/, '');
+	                case 'twitter':
+	                    return authData.twitter.displayName;
+	                case 'facebook':
+	                    return authData.facebook.displayName;
+	            }
+	        }
+
+	         // Tests to see if /users/<userId> has any data. 
+	        function checkIfUserExists(authData) {
+	            ref.child('users').child(authData.uid).once('value', function(snapshot) {
+	                exists = snapshot.exists();
+	                console.log('Recien traigo el valor ', exists);
+	                if (exists === false || exists === null || exists == undefined) {
+	                    ref.child("users").child(authData.uid).set({
+	                        provider: authData.provider,
+	                        name: getName(authData),
+	                        content: $('#content').html()
+	                    })
+	                    console.log('A new user has been registered. The uid is: ', authData.uid)
+	                } else if (exists == true) {
+	                    console.log('Is a returning user: ', authData.uid);
+	                    console.log(snapshot.child('content'));
+	                    $('#content').html(snapshot.child('content').val());
+	                }
+	            });
+	        }
         </script>
 	</body>
 </html>
