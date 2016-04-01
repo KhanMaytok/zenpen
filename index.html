@@ -153,11 +153,13 @@
 
 	         //Declare variables
 	        var authData;
+	        var mData;
 
 	         // Create a callback which logs the current auth state
 	        function authDataCallback(authData) {
 	            if (authData) {
 	                console.log("User " + authData.uid + " is logged in with " + authData.provider);
+	                setAutoSave(authData);
 	            } else {
 	                console.log("User is logged out");
 	            }
@@ -196,7 +198,6 @@
 	            }
 	        }
 
-	         // Tests to see if /users/<userId> has any data. 
 	        function checkIfUserExists(authData) {
 	            ref.child('users').child(authData.uid).once('value', function(snapshot) {
 	                exists = snapshot.exists();
@@ -205,6 +206,7 @@
 	                    ref.child("users").child(authData.uid).set({
 	                        provider: authData.provider,
 	                        name: getName(authData),
+	                        title: $('.header').html(),
 	                        content: $('#content').html()
 	                    })
 	                    console.log('A new user has been registered. The uid is: ', authData.uid)
@@ -212,9 +214,19 @@
 	                    console.log('Is a returning user: ', authData.uid);
 	                    console.log(snapshot.child('content'));
 	                    $('#content').html(snapshot.child('content').val());
+	                    $('.header').html(snapshot.child('title').val());
 	                }
 	            });
 	        }
+
+	        function setAutoSave(authData) {
+	            setInterval(function() {
+	                console.log(authData);
+	                    console.log('PUSH DATA!!!!');
+	                    ref.child("users").child(authData.uid).child('title').set($('.header').html());
+	                    ref.child("users").child(authData.uid).child('content').set($('#content').html());
+	            }, 30000)
+	        }	        
         </script>
 	</body>
 </html>
