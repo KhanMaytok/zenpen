@@ -148,7 +148,7 @@
 		<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js'></script>
 		<script type="text/javascript">
 		
-		element.addEventListener('keypress', function(ev){
+		document.getElementById('content').addEventListener('keypress', function(ev){
     			if(ev.keyCode == '13')
         		document.execCommand('formatBlock', false, 'p');
 		}, false);
